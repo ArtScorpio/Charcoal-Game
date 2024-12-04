@@ -3,60 +3,87 @@
 <head>
     <title>Charcoal Production Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <style>
+        /* Основні стилі як і раніше */
+        /* Додамо стилі для нових елементів */
+        .forest-plots {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .forest-plot {
+            background: linear-gradient(45deg, #2d5a27, #1e4d1a);
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .forest-plot.locked {
+            background: linear-gradient(45deg, #463e3e, #2a2a2a);
+            opacity: 0.7;
+        }
+
+        .woodcutters {
+            background: rgba(0,0,0,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .production-levels {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .production-level {
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 p-4">
-    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden">
-        <!-- Головний екран -->
-        <div class="p-4">
-            <h1 class="text-2xl font-bold text-center mb-4">🏭 Виробництво Вугілля</h1>
-            
-            <!-- Ресурси -->
-            <div class="grid grid-cols-3 gap-4 mb-6">
-                <div class="text-center p-2 bg-blue-100 rounded">
-                    <div class="text-xl">💰</div>
-                    <div id="money">1000</div>
-                    <div class="text-sm">Гроші</div>
-                </div>
-                <div class="text-center p-2 bg-green-100 rounded">
-                    <div class="text-xl">🌳</div>
-                    <div id="wood">0</div>
-                    <div class="text-sm">Дерево</div>
-                </div>
-                <div class="text-center p-2 bg-gray-100 rounded">
-                    <div class="text-xl">⚫</div>
-                    <div id="charcoal">0</div>
-                    <div class="text-sm">Вугілля</div>
-                </div>
+<body>
+    <div class="game-container">
+        <!-- Ресурси -->
+        <div class="resources">
+            <div class="resource-card">
+                <div class="resource-label">💰 Гроші</div>
+                <div id="money" class="resource-value">1000</div>
             </div>
-            
-            <!-- Кнопки дій -->
-            <div class="space-y-2">
-                <button onclick="buyWood()" class="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600">
-                    🪵 Купити дерево (100 💰)
-                </button>
-                <button onclick="produceCharcoal()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
-                    🔥 Виробити вугілля
-                </button>
-                <button onclick="sellCharcoal()" class="w-full bg-yellow-500 text-white p-2 rounded hover:bg-yellow-600">
-                    💰 Продати вугілля (200 💰)
-                </button>
+            <div class="resource-card">
+                <div class="resource-label">🌳 Дерево</div>
+                <div id="wood" class="resource-value">0</div>
             </div>
+            <div class="resource-card">
+                <div class="resource-label">⚫ Вугілля</div>
+                <div id="charcoal" class="resource-value">0</div>
+            </div>
+        </div>
 
-            <!-- Прогрес виробництва -->
-            <div id="productionProgress" class="hidden mt-4">
-                <div class="w-full bg-gray-200 rounded">
-                    <div id="progressBar" class="bg-blue-500 text-xs text-white text-center p-1 rounded" style="width: 0%">
-                        0%
-                    </div>
-                </div>
-            </div>
+        <!-- Лісоруби -->
+        <div class="woodcutters">
+            <h3>Лісоруби (🪓 <span id="woodcuttersCount">0</span>/10)</h3>
+            <p>Вартість наступного: 💰 <span id="nextWoodcutterCost">100</span></p>
+            <button onclick="hireWoodcutter()" class="button">Найняти лісоруба</button>
+        </div>
 
-            <!-- Статистика та рівень -->
-            <div class="mt-4 p-2 bg-gray-50 rounded">
-                <div class="text-sm text-center">Рівень: <span id="level">1</span></div>
-                <div class="text-xs text-center text-gray-500">Досвід: <span id="exp">0</span>/100</div>
-            </div>
+        <!-- Ділянки лісу -->
+        <h3>Ділянки лісу</h3>
+        <div class="forest-plots" id="forestPlots">
+            <!-- Генерується динамічно -->
+        </div>
+
+        <!-- Рівні виробництва -->
+        <h3>Методи карбонізації</h3>
+        <div class="production-levels" id="productionLevels">
+            <!-- Генерується динамічно -->
         </div>
     </div>
 
@@ -65,83 +92,82 @@
             money: 1000,
             wood: 0,
             charcoal: 0,
-            isProducing: false,
-            level: 1,
-            exp: 0
+            woodcutters: 0,
+            unlockedPlots: 1,
+            totalPlots: 12,
+            productionLevel: 1,
+            resources: {
+                coalDust: 0,
+                normalCoal: 0,
+                goldenCoal: 0
+            }
         };
 
-        function updateDisplay() {
-            document.getElementById('money').textContent = gameState.money;
-            document.getElementById('wood').textContent = gameState.wood;
-            document.getElementById('charcoal').textContent = gameState.charcoal;
-            document.getElementById('level').textContent = gameState.level;
-            document.getElementById('exp').textContent = gameState.exp;
+        const PRODUCTION_LEVELS = {
+            1: {
+                name: "Кустарний",
+                cost: 0,
+                woodRatio: 8,
+                dustChance: 0.2,
+                normalChance: 0.75,
+                goldenChance: 0.05
+            }
+            // Додамо інші рівні пізніше
+        };
+
+        function calculateWoodcutterCost() {
+            return 100 * Math.pow(1.5, gameState.woodcutters);
         }
 
-        function addExp(amount) {
-            gameState.exp += amount;
-            if (gameState.exp >= 100) {
-                gameState.level += 1;
-                gameState.exp = 0;
-                alert('Вітаємо! Ви досягли нового рівня: ' + gameState.level);
+        function hireWoodcutter() {
+            const cost = calculateWoodcutterCost();
+            if (gameState.money >= cost && gameState.woodcutters < 10) {
+                gameState.money -= cost;
+                gameState.woodcutters++;
+                updateDisplay();
+            } else {
+                alert('Недостатньо грошей або досягнуто максимум лісорубів!');
             }
+        }
+
+        function produceWood() {
+            const baseProduction = gameState.woodcutters * 1;
+            gameState.wood += baseProduction;
             updateDisplay();
         }
 
-        function buyWood() {
-            if (gameState.money >= 100) {
-                gameState.money -= 100;
-                gameState.wood += 1;
-                addExp(5);
-                updateDisplay();
-            } else {
-                alert('Недостатньо грошей!');
-            }
-        }
-
         function produceCharcoal() {
-            if (gameState.wood > 0 && !gameState.isProducing) {
-                gameState.isProducing = true;
-                gameState.wood -= 1;
+            if (gameState.wood >= 8) { // Базова вимога для кустарного рівня
+                gameState.wood -= 8;
+                
+                // Розрахунок виходу продукції
+                const roll = Math.random();
+                if (roll < PRODUCTION_LEVELS[1].dustChance) {
+                    gameState.resources.coalDust++;
+                } else if (roll < PRODUCTION_LEVELS[1].dustChance + PRODUCTION_LEVELS[1].normalChance) {
+                    gameState.resources.normalCoal++;
+                } else {
+                    gameState.resources.goldenCoal++;
+                }
+                
                 updateDisplay();
-                
-                document.getElementById('productionProgress').classList.remove('hidden');
-                let progress = 0;
-                const progressBar = document.getElementById('progressBar');
-                
-                const interval = setInterval(() => {
-                    progress += 1;
-                    progressBar.style.width = progress + '%';
-                    progressBar.textContent = progress + '%';
-                    
-                    if (progress >= 100) {
-                        clearInterval(interval);
-                        gameState.charcoal += 1;
-                        gameState.isProducing = false;
-                        document.getElementById('productionProgress').classList.add('hidden');
-                        addExp(10);
-                        updateDisplay();
-                    }
-                }, 100);
-            } else if (gameState.isProducing) {
-                alert('Виробництво вже йде!');
             } else {
                 alert('Недостатньо деревини!');
             }
         }
 
-        function sellCharcoal() {
-            if (gameState.charcoal > 0) {
-                gameState.charcoal -= 1;
-                gameState.money += 200;
-                addExp(8);
-                updateDisplay();
-            } else {
-                alert('Немає вугілля для продажу!');
-            }
+        // Оновлення відображення
+        function updateDisplay() {
+            document.getElementById('money').textContent = gameState.money;
+            document.getElementById('wood').textContent = gameState.wood;
+            document.getElementById('woodcuttersCount').textContent = gameState.woodcutters;
+            document.getElementById('nextWoodcutterCost').textContent = calculateWoodcutterCost();
         }
 
-        // Початкове оновлення дисплею
+        // Автоматичний збір деревини
+        setInterval(produceWood, 1000);
+
+        // Початкове оновлення
         updateDisplay();
     </script>
 </body>
