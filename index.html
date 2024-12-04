@@ -1,0 +1,19 @@
+import telebot
+from telebot.types import WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton
+
+bot = telebot.TeleBot('7772938739:AAETTA61zYAjDJptQ-wJyd8GJdY3Cffuj88')
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton(
+        "🎮 Грати",
+        web_app=WebAppInfo(url='URL_ВАШОЇ_ГРИ')  # Тут потрібно вказати URL, де розміщена гра
+    ))
+    bot.send_message(
+        message.chat.id,
+        "Ласкаво просимо до гри Виробництво Вугілля!\nНатисніть кнопку нижче щоб почати:",
+        reply_markup=markup
+    )
+
+bot.polling(none_stop=True)
