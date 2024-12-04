@@ -5,7 +5,166 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         /* Стилі, які ми розробили раніше */
-        /* ... */
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3);
+        }
+
+        /* Ресурси */
+        .resources {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .resource-card {
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .resource-card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Секція лісорубів */
+        .woodcutters-section {
+            background: linear-gradient(45deg, #2d5a27, #1e4d1a);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            margin: 20px 0;
+        }
+
+        .woodcutter-upgrades {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        /* Ділянки лісу */
+        .forest-plots {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .forest-plot {
+            background: linear-gradient(45deg, #2d5a27, #1e4d1a);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .forest-plot:hover {
+            transform: scale(1.05);
+        }
+
+        .forest-plot.locked {
+            background: linear-gradient(45deg, #463e3e, #2a2a2a);
+            opacity: 0.7;
+        }
+
+        /* Рівні карбонізації */
+        .carbonization-levels {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .carbonization-level {
+            background: linear-gradient(45deg, #34495e, #2c3e50);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .carbonization-level:hover {
+            transform: scale(1.05);
+        }
+
+        .carbonization-level.active {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+        }
+
+        .carbonization-level.locked {
+            background: linear-gradient(45deg, #463e3e, #2a2a2a);
+            cursor: not-allowed;
+        }
+
+        /* Анімації */
+        @keyframes working {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .working {
+            animation: working 1s infinite;
+        }
+
+        /* Кнопки */
+        .button {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+        }
+
+        .button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        /* Прогрес бари */
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            width: 0%;
+            transition: width 0.3s;
+        }
     </style>
 </head>
 <body>
@@ -14,12 +173,42 @@
         
         <!-- Ресурси -->
         <div class="resources">
-            <!-- ... -->
+            <div class="resource-card" style="background: linear-gradient(45deg, #f1c40f, #f39c12);">
+                <div>💰 Гроші</div>
+                <div id="money">1000</div>
+            </div>
+            <div class="resource-card" style="background: linear-gradient(45deg, #27ae60, #2ecc71);">
+                <div>🌳 Деревина</div>
+                <div id="wood">0</div>
+            </div>
+            <div class="resource-card" style="background: linear-gradient(45deg, #2c3e50, #34495e);">
+                <div>⚫ Вугільний пил</div>
+                <div id="coalDust">0</div>
+            </div>
+            <div class="resource-card" style="background: linear-gradient(45deg, #2c3e50, #34495e);">
+                <div>⚫ Деревне вугілля</div>
+                <div id="normalCoal">0</div>
+            </div>
+            <div class="resource-card" style="background: linear-gradient(45deg, #f1c40f, #f39c12);">
+                <div>✨ Золоте вугілля</div>
+                <div id="goldenCoal">0</div>
+            </div>
         </div>
 
         <!-- Секція лісорубів -->
         <div class="woodcutters-section">
-            <!-- ... -->
+            <h2>🪓 Лісоруби</h2>
+            <div>Кількість лісорубів: <span id="woodcuttersCount">0</span>/10</div>
+            <div>Вартість найму: 💰<span id="woodcutterCost">100</span></div>
+            <button onclick="hireWoodcutter()" class="button">Найняти лісоруба</button>
+            
+            <div class="woodcutter-upgrades">
+                <div>
+                    <h3>🔧 Покращення інструментів</h3>
+                    <div>Рівень: <span id="toolLevel">1</span></div>
+                    <button onclick="upgradeTool()" class="button">Покращити (💰<span id="toolUpgradeCost">200</span>)</button>
+                </div>
+            </div>
         </div>
 
         <!-- Ділянки лісу -->
