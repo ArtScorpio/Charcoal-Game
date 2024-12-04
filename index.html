@@ -4,7 +4,7 @@
     <title>Charcoal Production Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        /* Стилі, які ми розробили раніше */
+        /* Загальні стилі */
         body {
             margin: 0;
             padding: 20px;
@@ -165,6 +165,49 @@
             width: 0%;
             transition: width 0.3s;
         }
+
+        /* Нові стилі */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background: rgba(255,255,255,0.4);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #2ecc71;
+            color: white;
+            animation: slideIn 0.3s ease-out;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
     </style>
 </head>
 <body>
@@ -318,6 +361,21 @@
         function showNotification(title, message) { /* ... */ }
         function saveGame() { /* ... */ }
         function loadGame() { /* ... */ }
+
+        // Функція для відображення вкладок
+        function showTab(tabName) {
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}Content`).classList.add('active');
+
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`.tab[onclick="showTab('${tabName}')"]`).classList.add('active');
+        }
 
         // Ініціалізація гри
         window.onload = function() {
