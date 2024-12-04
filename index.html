@@ -4,22 +4,81 @@
     <title>Charcoal Production Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        /* Основні стилі як і раніше */
-        /* Додамо стилі для нових елементів */
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3);
+        }
+
+        /* Ресурси */
+        .resources {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .resource-card {
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .resource-card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Секція лісорубів */
+        .woodcutters-section {
+            background: linear-gradient(45deg, #2d5a27, #1e4d1a);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            margin: 20px 0;
+        }
+
+        .woodcutter-upgrades {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        /* Ділянки лісу */
         .forest-plots {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            gap: 15px;
             margin: 20px 0;
         }
 
         .forest-plot {
             background: linear-gradient(45deg, #2d5a27, #1e4d1a);
-            padding: 15px;
-            border-radius: 8px;
+            padding: 20px;
+            border-radius: 10px;
             color: white;
             text-align: center;
             cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .forest-plot:hover {
+            transform: scale(1.05);
         }
 
         .forest-plot.locked {
@@ -27,75 +86,152 @@
             opacity: 0.7;
         }
 
-        .woodcutters {
-            background: rgba(0,0,0,0.1);
-            padding: 15px;
-            border-radius: 8px;
-            margin: 10px 0;
-        }
-
-        .production-levels {
+        /* Рівні карбонізації */
+        .carbonization-levels {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
+            gap: 15px;
             margin: 20px 0;
         }
 
-        .production-level {
-            padding: 10px;
-            border-radius: 8px;
+        .carbonization-level {
+            background: linear-gradient(45deg, #34495e, #2c3e50);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
             text-align: center;
             cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .carbonization-level:hover {
+            transform: scale(1.05);
+        }
+
+        .carbonization-level.active {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+        }
+
+        .carbonization-level.locked {
+            background: linear-gradient(45deg, #463e3e, #2a2a2a);
+            cursor: not-allowed;
+        }
+
+        /* Анімації */
+        @keyframes working {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .working {
+            animation: working 1s infinite;
+        }
+
+        /* Кнопки */
+        .button {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+        }
+
+        .button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        /* Прогрес бари */
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            width: 0%;
+            transition: width 0.3s;
         }
     </style>
 </head>
 <body>
     <div class="game-container">
+        <h1 style="text-align: center; margin-bottom: 30px;">🏭 Виробництво деревного вугілля</h1>
+        
         <!-- Ресурси -->
         <div class="resources">
-            <div class="resource-card">
-                <div class="resource-label">💰 Гроші</div>
-                <div id="money" class="resource-value">1000</div>
+            <div class="resource-card" style="background: linear-gradient(45deg, #f1c40f, #f39c12);">
+                <div>💰 Гроші</div>
+                <div id="money">1000</div>
             </div>
-            <div class="resource-card">
-                <div class="resource-label">🌳 Дерево</div>
-                <div id="wood" class="resource-value">0</div>
+            <div class="resource-card" style="background: linear-gradient(45deg, #27ae60, #2ecc71);">
+                <div>🌳 Деревина</div>
+                <div id="wood">0</div>
             </div>
-            <div class="resource-card">
-                <div class="resource-label">⚫ Вугілля</div>
-                <div id="charcoal" class="resource-value">0</div>
+            <div class="resource-card" style="background: linear-gradient(45deg, #2c3e50, #34495e);">
+                <div>⚫ Вугільний пил</div>
+                <div id="coalDust">0</div>
+            </div>
+            <div class="resource-card" style="background: linear-gradient(45deg, #2c3e50, #34495e);">
+                <div>⚫ Деревне вугілля</div>
+                <div id="normalCoal">0</div>
+            </div>
+            <div class="resource-card" style="background: linear-gradient(45deg, #f1c40f, #f39c12);">
+                <div>✨ Золоте вугілля</div>
+                <div id="goldenCoal">0</div>
             </div>
         </div>
 
-        <!-- Лісоруби -->
-        <div class="woodcutters">
-            <h3>Лісоруби (🪓 <span id="woodcuttersCount">0</span>/10)</h3>
-            <p>Вартість наступного: 💰 <span id="nextWoodcutterCost">100</span></p>
+        <!-- Секція лісорубів -->
+        <div class="woodcutters-section">
+            <h2>🪓 Лісоруби</h2>
+            <div>Кількість лісорубів: <span id="woodcuttersCount">0</span>/10</div>
+            <div>Вартість найму: 💰<span id="woodcutterCost">100</span></div>
             <button onclick="hireWoodcutter()" class="button">Найняти лісоруба</button>
+            
+            <div class="woodcutter-upgrades">
+                <div>
+                    <h3>🔧 Покращення інструментів</h3>
+                    <div>Рівень: <span id="toolLevel">1</span></div>
+                    <button onclick="upgradeTool()" class="button">Покращити (💰<span id="toolUpgradeCost">200</span>)</button>
+                </div>
+            </div>
         </div>
 
         <!-- Ділянки лісу -->
-        <h3>Ділянки лісу</h3>
+        <h2>🌲 Ділянки лісу</h2>
         <div class="forest-plots" id="forestPlots">
             <!-- Генерується динамічно -->
         </div>
 
-        <!-- Рівні виробництва -->
-        <h3>Методи карбонізації</h3>
-        <div class="production-levels" id="productionLevels">
+        <!-- Рівні карбонізації -->
+        <h2>🔥 Методи карбонізації</h2>
+        <div class="carbonization-levels" id="carbonizationLevels">
             <!-- Генерується динамічно -->
         </div>
     </div>
 
     <script>
+        // Базовий стан гри
         let gameState = {
             money: 1000,
             wood: 0,
-            charcoal: 0,
             woodcutters: 0,
+            toolLevel: 1,
             unlockedPlots: 1,
-            totalPlots: 12,
-            productionLevel: 1,
+            carbonizationLevel: 1,
             resources: {
                 coalDust: 0,
                 normalCoal: 0,
@@ -103,71 +239,107 @@
             }
         };
 
-        const PRODUCTION_LEVELS = {
+        // Конфігурація рівнів карбонізації
+        const CARBONIZATION_LEVELS = {
             1: {
                 name: "Кустарний",
                 cost: 0,
                 woodRatio: 8,
                 dustChance: 0.2,
                 normalChance: 0.75,
-                goldenChance: 0.05
+                goldenChance: 0.05,
+                description: "Випалювання у полі"
+            },
+            2: {
+                name: "Покращений кустарний",
+                cost: 1000,
+                woodRatio: 7,
+                dustChance: 0.15,
+                normalChance: 0.8,
+                goldenChance: 0.05,
+                description: "Покращена яма для випалювання"
+            },
+            3: {
+                name: "Напівпромисловий",
+                cost: 5000,
+                woodRatio: 6,
+                dustChance: 0.1,
+                normalChance: 0.8,
+                goldenChance: 0.1,
+                description: "Металева піч"
+            },
+            4: {
+                name: "Промисловий",
+                cost: 25000,
+                woodRatio: 5,
+                dustChance: 0.05,
+                normalChance: 0.85,
+                goldenChance: 0.1,
+                description: "Промислова піч"
+            },
+            5: {
+                name: "Високотехнологічний",
+                cost: 100000,
+                woodRatio: 4,
+                dustChance: 0.02,
+                normalChance: 0.88,
+                goldenChance: 0.1,
+                description: "Автоматизована лінія"
             }
-            // Додамо інші рівні пізніше
         };
 
-        function calculateWoodcutterCost() {
-            return 100 * Math.pow(1.5, gameState.woodcutters);
+        // Функції оновлення відображення
+        function updateDisplay() {
+            document.getElementById('money').textContent = gameState.money;
+            document.getElementById('wood').textContent = gameState.wood;
+            document.getElementById('coalDust').textContent = gameState.resources.coalDust;
+            document.getElementById('normalCoal').textContent = gameState.resources.normalCoal;
+            document.getElementById('goldenCoal').textContent = gameState.resources.goldenCoal;
+            document.getElementById('woodcuttersCount').textContent = gameState.woodcutters;
+            document.getElementById('woodcutterCost').textContent = calculateWoodcutterCost();
+            document.getElementById('toolLevel').textContent = gameState.toolLevel;
+            document.getElementById('toolUpgradeCost').textContent = calculateToolUpgradeCost();
         }
 
+        // Функції розрахунку вартості
+        function calculateWoodcutterCost() {
+            return Math.floor(100 * Math.pow(1.5, gameState.woodcutters));
+        }
+
+        function calculateToolUpgradeCost() {
+            return Math.floor(200 * Math.pow(2, gameState.toolLevel - 1));
+        }
+
+        // Функції найму та покращення
         function hireWoodcutter() {
             const cost = calculateWoodcutterCost();
             if (gameState.money >= cost && gameState.woodcutters < 10) {
                 gameState.money -= cost;
                 gameState.woodcutters++;
                 updateDisplay();
-            } else {
-                alert('Недостатньо грошей або досягнуто максимум лісорубів!');
             }
         }
 
+        function upgradeTool() {
+            const cost = calculateToolUpgradeCost();
+            if (gameState.money >= cost) {
+                gameState.money -= cost;
+                gameState.toolLevel++;
+                updateDisplay();
+            }
+        }
+
+        // Функція виробництва деревини
         function produceWood() {
-            const baseProduction = gameState.woodcutters * 1;
+            const baseProduction = gameState.woodcutters * gameState.toolLevel;
             gameState.wood += baseProduction;
             updateDisplay();
         }
 
-        function produceCharcoal() {
-            if (gameState.wood >= 8) { // Базова вимога для кустарного рівня
-                gameState.wood -= 8;
-                
-                // Розрахунок виходу продукції
-                const roll = Math.random();
-                if (roll < PRODUCTION_LEVELS[1].dustChance) {
-                    gameState.resources.coalDust++;
-                } else if (roll < PRODUCTION_LEVELS[1].dustChance + PRODUCTION_LEVELS[1].normalChance) {
-                    gameState.resources.normalCoal++;
-                } else {
-                    gameState.resources.goldenCoal++;
-                }
-                
-                updateDisplay();
-            } else {
-                alert('Недостатньо деревини!');
-            }
-        }
-
-        // Оновлення відображення
-        function updateDisplay() {
-            document.getElementById('money').textContent = gameState.money;
-            document.getElementById('wood').textContent = gameState.wood;
-            document.getElementById('woodcuttersCount').textContent = gameState.woodcutters;
-            document.getElementById('nextWoodcutterCost').textContent = calculateWoodcutterCost();
-        }
-
-        // Автоматичний збір деревини
+        // Запуск автоматичного виробництва
         setInterval(produceWood, 1000);
 
-        // Початкове оновлення
+        // Початкове оновлення відображення
         updateDisplay();
     </script>
 </body>
